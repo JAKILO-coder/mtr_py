@@ -40,11 +40,12 @@ w_data = None
 @client.route('/')
 def home():
     title = current_app.config['TITLE']
-    poly_location = np.random.random((1, 3, 3))
+    # poly_location = np.random.random((1, 3, 3))
     if pos_data == None or w_data == None:
-        p_location = [[1.5, 1], [1.2, 4]]
-        weights = [0, 1]
-        plot = plot_map_practicle(polygon_location=poly_location, practicle_location=p_location,
+        p_location = np.array([[114.19890707301564, 22.32988199829699], [114.19904346836372, 22.3299019348249]])
+        p_location += np.random.random((2, 2))*0.0001
+        weights = np.random.random(2)
+        plot = plot_map_practicle(polygon_location=polygon_location, practicle_location=p_location,
                                   weights=weights, is_save=False)
     else:
         plot = plot_map_practicle(polygon_location=polygon_location, practicle_location=pos_data,
@@ -136,7 +137,8 @@ import re
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1#
 # use the map geo location here
-file_path = 'D:\\留学\\港科大\\research assistant job\\mtr_cms\\planb_python\\flask-matplotlib-tutorial-master\\flaskplotlib\\KAT-polygon_source-geojson-1690900701.txt'
+# file_path = 'D:\\留学\\港科大\\research assistant job\\mtr_cms\\planb_python\\mtr-py\\flaskplotlib\\KAT-polygon_source-geojson-1690900701.txt'
+file_path = '/home/mtrec/Desktop/mtr-py/mtr_py/flaskplotlib/KAT-polygon_source-geojson-1690900701.txt'
 # 替换成你的文件路径
 
 with open(file_path, 'r') as file:

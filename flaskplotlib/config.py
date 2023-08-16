@@ -1,1 +1,1 @@
-TITLE = 'A Pretty Good Plot'
+TITLE = 'mtr_py'
