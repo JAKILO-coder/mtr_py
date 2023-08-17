@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="22681584-d70c-4952-954f-65cf01c77efb" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/flaskplotlib/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/flaskplotlib/config.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/flaskplotlib/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/flaskplotlib/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
     </list>
@@ -41,9 +39,9 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
-    <state x="324" y="204" key="com.intellij.ide.util.TipDialog" timestamp="1692205495311">
+    <state x="324" y="204" key="com.intellij.ide.util.TipDialog" timestamp="1692237217011">
       <screen x="0" y="0" width="1280" height="760" />
     </state>
-    <state x="324" y="204" key="com.intellij.ide.util.TipDialog/0.0.1280.760@0.0.1280.760" timestamp="1692205495311" />
+    <state x="324" y="204" key="com.intellij.ide.util.TipDialog/0.0.1280.760@0.0.1280.760" timestamp="1692237217011" />
   </component>
 </project>

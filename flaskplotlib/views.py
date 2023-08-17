@@ -45,39 +45,34 @@ def home():
         p_location = np.array([[114.19890707301564, 22.32988199829699], [114.19904346836372, 22.3299019348249]])
         p_location += np.random.random((2, 2))*0.0001
         weights = np.random.random(2)
-        plot = plot_map_practicle(polygon_location=polygon_location, practicle_location=p_location,
-                                  weights=weights, is_save=False)
+        plot = plot_map_practicle(polygon_location=polygon_location, practicle_location=p_location, weights=weights,
+                                  is_save=None, source_location=source_location)
     else:
-        plot = plot_map_practicle(polygon_location=polygon_location, practicle_location=pos_data,
-                                  weights=w_data, is_save=False)
+        plot = plot_map_practicle(polygon_location=polygon_location, practicle_location=pos_data, weights=w_data,
+                                  is_save=None, source_location=source_location)
+
     return render_template('index.html', title=title, plot=plot)
 
 #####################################################################################################################
-
 def plot_map_practicle(polygon_location, practicle_location, weights, is_save, source_location=None):
     # 创建一个绘图对象和一个子图
     fig, ax = plt.subplots(figsize=(10, 20))
     #     fig, ax = plt.subplots(figsize=(10, 5))
 
-    # 绘制每一个多边形
+#     绘制每一个多边形
     for polygon in polygon_location:
         polygon = np.array(polygon)
         x = polygon[:, 0]
         y = polygon[:, 1]
         z = polygon[:, 2]
         # 绘制多边形顶点
-        ax.plot(x, y, 'o-', color='blue', linewidth=0.01)
+        ax.plot(x, y, '-', color='blue', linewidth=0.01)
 
         # 连接多边形的边
-        ax.plot(np.append(x, x[0]), np.append(y, y[0]), color='black')
+        ax.plot(np.append(x, x[0]), np.append(y, y[0]), color='blue')
 
         # 在多边形中间用浅蓝色填充
         ax.fill(x, y, color='lightblue')
-
-    # plot source
-    #     s_location = np.array(source_location)
-    #     print(s_location.shape)
-    #     ax.plot(s_location[:, 0], s_location[:, 1], '.', color="purple")
 
     # plot practicle
     # 计算权重的最小值和最大值
@@ -93,6 +88,11 @@ def plot_map_practicle(polygon_location, practicle_location, weights, is_save, s
     p_location = np.array(practicle_location)
     ax.scatter(p_location[:, 0], p_location[:, 1], c=colors, s=5, zorder=10)  # 设置点的大小为50
 
+    #     plot source
+    s_location = np.array(source_location)
+    # print(s_location.shape)
+    ax.scatter(s_location[:, 0], s_location[:, 1], zorder=12, s=50)
+
     # 设置绘图范围和标签
     ax.set_aspect('equal', adjustable='datalim')  # 保持纵横比相等
     # ax.set_xlabel('X')
@@ -104,10 +104,12 @@ def plot_map_practicle(polygon_location, practicle_location, weights, is_save, s
     ax.spines['left'].set_visible(False)
     ax.set_xticklabels([])
     ax.set_yticklabels([])
-    #     ax.set_xlim(p_location[:, 0].min(), p_location[:, 0].max())  # 设置 x 坐标范围
-    #     ax.set_ylim(p_location[:, 1].min(), p_location[:, 1].max())  # 设置 y 坐标范围
+    polygon_np = np.array(polygon_location)
+    ax.set_xlim(polygon_np[:, :, 0].min() - 0.00001, polygon_np[:, :, 0].max() + 0.00001)  # 设置 x 坐标范围
+    ax.set_ylim(polygon_np[:, :, 1].min() - 0.00001, polygon_np[:, :, 1].max() + 0.00001)  # 设置 y 坐标范围
     ax.tick_params(axis='both', which='both', bottom=False, top=False, left=False, right=False)
 
+#     print(np.array(polygon_location)[0, 0, :])
     # 显示绘图
     # plt.show()
 
@@ -124,22 +126,21 @@ def plot_map_practicle(polygon_location, practicle_location, weights, is_save, s
         second = current_time.second
         plt.save(f'{year}{month}{day}{hour}{minute}{second}')
 
+    # plt.show()
     img = io.StringIO()
     fig.savefig(img, format='svg')
     # clip off the xml headers from the image
     svg_img = '<svg' + img.getvalue().split('<svg')[1]
 
     return svg_img
-
 ##################################################################################################################
 # get map
 import re
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1#
 # use the map geo location here
-# file_path = 'D:\\留学\\港科大\\research assistant job\\mtr_cms\\planb_python\\mtr-py\\flaskplotlib\\KAT-polygon_source-geojson-1690900701.txt'
-file_path = '/home/mtrec/Desktop/mtr-py/mtr_py/flaskplotlib/KAT-polygon_source-geojson-1690900701.txt'
-# 替换成你的文件路径
+file_path = 'D:\\留学\\港科大\\research assistant job\\mtr_cms\\planb_python\\KAT-polygon_source-geojson-1690900701.txt'  # 替换成你的文件路径
+# file_path = '/home/mtrec/Desktop/mtr-py/mtr_py/flaskplotlib/KAT-polygon_source-geojson-1690900701.txt'
 
 with open(file_path, 'r') as file:
     data = file.read()
@@ -183,7 +184,7 @@ if source_info_match:
     source_info_dict = {}
     for identifier, _, x, y, z in source_info_match:
         source_name.append(identifier)
-        source_location.append([x, y, z])
+        source_location.append([float(x), float(y), float(z)])
 
 ########################################################################################################################
 
@@ -202,6 +203,10 @@ def connect_mqtt():
         get_data = msg.payload
         # 将字节数据转换为字符串
         data_str = get_data.decode('utf-8')
+        # while(1):
+        #     pos_data = np.array([[114.19900707301564, 22.32988599829699], [114.19907346836372, 22.3299519348249]])
+        #     pos_data += np.random.random((2, 2)) * 0.0001
+        #     w_data = np.random.random(2)
 
         # 解析JSON数据
         data = json.loads(data_str)
