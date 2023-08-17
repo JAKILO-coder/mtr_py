@@ -139,8 +139,8 @@ import re
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1#
 # use the map geo location here
-file_path = 'D:\\留学\\港科大\\research assistant job\\mtr_cms\\planb_python\\KAT-polygon_source-geojson-1690900701.txt'  # 替换成你的文件路径
-# file_path = '/home/mtrec/Desktop/mtr-py/mtr_py/flaskplotlib/KAT-polygon_source-geojson-1690900701.txt'
+# file_path = 'D:\\留学\\港科大\\research assistant job\\mtr_cms\\planb_python\\KAT-polygon_source-geojson-1690900701.txt'  # 替换成你的文件路径
+file_path = '/home/mtrec/Desktop/mtr-py/mtr_py/flaskplotlib/KAT-polygon_source-geojson-1690900701.txt'
 
 with open(file_path, 'r') as file:
     data = file.read()
