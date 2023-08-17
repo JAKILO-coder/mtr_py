@@ -34,17 +34,18 @@ broker = '143.89.49.63'
 port = 1883
 topic = "topic/sub"
 # client_id = f'python-mqtt-1'
-pos_data = None
-w_data = None
+pos_data = [0]
+w_data = [0]
+
 
 @client.route('/')
 def home():
     title = current_app.config['TITLE']
     # poly_location = np.random.random((1, 3, 3))
-    if pos_data == None or w_data == None:
-        p_location = np.array([[114.19890707301564, 22.32988199829699], [114.19904346836372, 22.3299019348249]])
-        p_location += np.random.random((2, 2))*0.0001
-        weights = np.random.random(2)
+    if pos_data == [0] or w_data == [0]:
+        p_location = np.array([[114.19890707301564, 22.32988199829699]])
+        p_location += np.random.random((1, 1))*0.0001
+        weights = np.random.random(1)
         plot = plot_map_practicle(polygon_location=polygon_location, practicle_location=p_location, weights=weights,
                                   is_save=None, source_location=source_location)
     else:
@@ -56,7 +57,7 @@ def home():
 #####################################################################################################################
 def plot_map_practicle(polygon_location, practicle_location, weights, is_save, source_location=None):
     # 创建一个绘图对象和一个子图
-    fig, ax = plt.subplots(figsize=(10, 20))
+    fig, ax = plt.subplots(figsize=(10, 10))
     #     fig, ax = plt.subplots(figsize=(10, 5))
 
 #     绘制每一个多边形
@@ -105,8 +106,8 @@ def plot_map_practicle(polygon_location, practicle_location, weights, is_save, s
     ax.set_xticklabels([])
     ax.set_yticklabels([])
     polygon_np = np.array(polygon_location)
-    ax.set_xlim(polygon_np[:, :, 0].min() - 0.00001, polygon_np[:, :, 0].max() + 0.00001)  # 设置 x 坐标范围
-    ax.set_ylim(polygon_np[:, :, 1].min() - 0.00001, polygon_np[:, :, 1].max() + 0.00001)  # 设置 y 坐标范围
+    ax.set_xlim(polygon_np[:, :, 0].min() - 0.00005, polygon_np[:, :, 0].max() + 0.00005)  # 设置 x 坐标范围
+    ax.set_ylim(polygon_np[:, :, 1].min() - 0.00005, polygon_np[:, :, 1].max() + 0.00005)  # 设置 y 坐标范围
     ax.tick_params(axis='both', which='both', bottom=False, top=False, left=False, right=False)
 
 #     print(np.array(polygon_location)[0, 0, :])
@@ -187,6 +188,10 @@ if source_info_match:
         source_location.append([float(x), float(y), float(z)])
 
 ########################################################################################################################
+def save_data(data1, data2):
+    global pos_data, w_data
+    pos_data = data1
+    w_data = data2
 
 def connect_mqtt():
     global pos_data, w_data
@@ -203,17 +208,17 @@ def connect_mqtt():
         get_data = msg.payload
         # 将字节数据转换为字符串
         data_str = get_data.decode('utf-8')
-        # while(1):
-        #     pos_data = np.array([[114.19900707301564, 22.32988599829699], [114.19907346836372, 22.3299519348249]])
-        #     pos_data += np.random.random((2, 2)) * 0.0001
-        #     w_data = np.random.random(2)
+        # fake_pos = np.array(
+        #     [[114.19926683331278, 22.33016890723563], [114.1993134159747, 22.330109070496775]]) + np.random.random(
+        #     (2, 2)) * 0.0001
 
         # 解析JSON数据
         data = json.loads(data_str)
-        pos_data = np.array(data['pos'].replace('[', '').replace(']', '').split(', '), dtype=float).reshape(-1, 2)
+        pos_data_n = np.array(data['pos'].replace('[', '').replace(']', '').split(', '), dtype=float).reshape(-1, 2)
 
         # 提取w字段的数据并转换为numpy.array
-        w_data = np.array(data['w'].replace('[', '').replace(']', '').split(', '), dtype=float)
+        w_data_n = np.array(data['w'].replace('[', '').replace(']', '').split(', '), dtype=float)
+        save_data(pos_data_n, w_data_n)
 
 
     #         res = json.loads(zlib.decompress(msg.payload))
@@ -259,7 +264,9 @@ def publish(client):
 print('create clinet mqtt')
 client1 = connect_mqtt()
 print('start mqtt loop')
-infinite_thread = threading.Thread(target=client1.loop_forever)
-infinite_thread.daemon = True
-infinite_thread.start()
+# client1.loop_forever()
+# infinite_thread = threading.Thread(target=client1.loop_forever)
+# infinite_thread.daemon = True
+# infinite_thread.start()
+client1.loop_start()
 client1.is_connected()
