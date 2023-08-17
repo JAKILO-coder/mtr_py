@@ -34,6 +34,7 @@ broker = '143.89.49.63'
 port = 1883
 topic = "topic/sub"
 # client_id = f'python-mqtt-1'
+is_message = False
 pos_data = [0]
 w_data = [0]
 
@@ -42,7 +43,7 @@ w_data = [0]
 def home():
     title = current_app.config['TITLE']
     # poly_location = np.random.random((1, 3, 3))
-    if pos_data == [0] or w_data == [0]:
+    if not is_message:
         p_location = np.array([[114.19890707301564, 22.32988199829699]])
         p_location += np.random.random((1, 1))*0.0001
         weights = np.random.random(1)
@@ -188,10 +189,11 @@ if source_info_match:
         source_location.append([float(x), float(y), float(z)])
 
 ########################################################################################################################
-def save_data(data1, data2):
-    global pos_data, w_data
+def save_data(data1, data2, data3):
+    global pos_data, w_data, is_message
     pos_data = data1
     w_data = data2
+    is_message = data3
 
 def connect_mqtt():
     global pos_data, w_data
@@ -218,7 +220,7 @@ def connect_mqtt():
 
         # 提取w字段的数据并转换为numpy.array
         w_data_n = np.array(data['w'].replace('[', '').replace(']', '').split(', '), dtype=float)
-        save_data(pos_data_n, w_data_n)
+        save_data(pos_data_n, w_data_n, True)
 
 
     #         res = json.loads(zlib.decompress(msg.payload))
