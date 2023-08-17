@@ -58,6 +58,7 @@ def home():
 #####################################################################################################################
 def plot_map_practicle(polygon_location, practicle_location, weights, is_save, source_location=None):
     # 创建一个绘图对象和一个子图
+    plt.clf()
     fig, ax = plt.subplots(figsize=(10, 10))
     #     fig, ax = plt.subplots(figsize=(10, 5))
 

@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="22681584-d70c-4952-954f-65cf01c77efb" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/flaskplotlib/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/flaskplotlib/templates/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/flaskplotlib/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/flaskplotlib/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -22,7 +23,7 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../fall detection/rknn" />
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -38,6 +39,10 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
+    <state x="421" y="135" key="FileChooserDialogImpl" timestamp="1692254751524">
+      <screen x="0" y="0" width="1280" height="760" />
+    </state>
+    <state x="421" y="135" key="FileChooserDialogImpl/0.0.1280.760@0.0.1280.760" timestamp="1692254751524" />
     <state x="324" y="204" key="com.intellij.ide.util.TipDialog" timestamp="1692249152112">
       <screen x="0" y="0" width="1280" height="760" />
     </state>
