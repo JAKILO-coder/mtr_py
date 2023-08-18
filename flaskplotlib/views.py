@@ -42,21 +42,29 @@ w_data = [0]
 @client.route('/')
 def home():
     title = current_app.config['TITLE']
-    # poly_location = np.random.random((1, 3, 3))
     if not is_message:
-        p_location = np.array([[114.19890707301564, 22.32988199829699]])
-        p_location += np.random.random((1, 1))*0.0001
-        weights = np.random.random(1)
+        p_location = np.array([[114.19890707301564, 22.32988199829699], [114.19890707301564, 22.32988199829699],
+                               [114.19890707301564, 22.32988199829699], [114.19890707301564, 22.32988199829699],
+                               [114.19890707301564, 22.32988199829699]])
+        p_location += np.random.random((5, 2))*0.0001
+        weights = np.random.random(5)
+        weights_s = np.random.random(len(source_location))
+        user_loc = np.array([114.19900707301564, 22.32988199829699])
         plot = plot_map_practicle(polygon_location=polygon_location, practicle_location=p_location, weights=weights,
-                                  is_save=None, source_location=source_location)
+                                  weights_s=weights_s, is_save=None, source_location=source_location,
+                                  user_location=user_loc)
     else:
+        weights_s = np.random.random(len(source_location))
+        user_loc = np.array([[114.19890707301564, 22.32988199829699]])
         plot = plot_map_practicle(polygon_location=polygon_location, practicle_location=pos_data, weights=w_data,
-                                  is_save=None, source_location=source_location)
+                                  weights_s=weights_s, is_save=None, source_location=source_location,
+                                  user_location=user_loc)
 
     return render_template('index.html', title=title, plot=plot)
 
 #####################################################################################################################
-def plot_map_practicle(polygon_location, practicle_location, weights, is_save, source_location=None):
+def plot_map_practicle(polygon_location, practicle_location, weights, weights_s, is_save,
+                       source_location=None, user_location=None):
     # 创建一个绘图对象和一个子图
     plt.clf()
     fig, ax = plt.subplots(figsize=(10, 10))
@@ -81,7 +89,6 @@ def plot_map_practicle(polygon_location, practicle_location, weights, is_save, s
     # 计算权重的最小值和最大值
     min_weight = np.min(weights)
     max_weight = np.max(weights)
-
     # 创建一个颜色映射
     norm = mcolors.Normalize(vmin=min_weight, vmax=max_weight)
     cmap = plt.cm.RdYlGn  # 使用RdYlGn颜色映射，权重越小越绿，权重越大越红
@@ -92,9 +99,20 @@ def plot_map_practicle(polygon_location, practicle_location, weights, is_save, s
     ax.scatter(p_location[:, 0], p_location[:, 1], c=colors, s=5, zorder=10)  # 设置点的大小为50
 
     #     plot source
+    min_weight = np.min(weights_s)
+    max_weight = np.max(weights_s)
+    # 创建一个颜色映射
+    norm = mcolors.Normalize(vmin=min_weight, vmax=max_weight)
+    cmap = plt.cm.Blues  # 使用Blue颜色映射
+    scalar_map = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    #     colors = plt.cm.RdYlGn(weights)  # 使用RdYlGn颜色映射，权重越大颜色越红，权重越小颜色越绿
+    colors = scalar_map.to_rgba(weights_s)
     s_location = np.array(source_location)
     # print(s_location.shape)
-    ax.scatter(s_location[:, 0], s_location[:, 1], zorder=12, s=50)
+    ax.scatter(s_location[:, 0], s_location[:, 1], c=colors, zorder=12, s=50)
+
+    # plot user location
+    ax.plot(user_location[0], user_location[1], c="red", markersize=15, zorder=100, marker='*')
 
     # 设置绘图范围和标签
     ax.set_aspect('equal', adjustable='datalim')  # 保持纵横比相等

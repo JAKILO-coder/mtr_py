@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta http-equiv="refresh" content="1">
+        <style> .trans{transform: rotate(60deg);} </style>
         <title>{{ title }}</title>
 
     </head>
     <body>
-        {{ plot|safe }}
+        <div class="trans">{{ plot|safe }}</div>
 
     </body>
 </html>
