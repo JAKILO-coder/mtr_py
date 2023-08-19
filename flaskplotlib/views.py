@@ -37,6 +37,9 @@ topic = "topic/sub"
 is_message = False
 pos_data = [0]
 w_data = [0]
+u_loc = [0]
+b_name = [0]
+b_strength = [0]
 
 
 @client.route('/')
@@ -54,11 +57,19 @@ def home():
                                   weights_s=weights_s, is_save=None, source_location=source_location,
                                   user_location=user_loc)
     else:
-        weights_s = np.random.random(len(source_location))
-        user_loc = np.array([[114.19890707301564, 22.32988199829699]])
+        # match beacon's name and source name
+        # sort source weight with name
+        beacon_dict = {name: strength for name, strength in zip(b_name, b_strength)}
+        b_strength_sort = []
+        for name in source_name:
+            if name in b_name:
+                b_strength_sort.append(beacon_dict[name])
+            else:
+                b_strength_sort.append(b_strength.min() - 1)
+        b_strength_sort = np.array(b_strength_sort)
         plot = plot_map_practicle(polygon_location=polygon_location, practicle_location=pos_data, weights=w_data,
-                                  weights_s=weights_s, is_save=None, source_location=source_location,
-                                  user_location=user_loc)
+                                  weights_s=b_strength_sort, is_save=None, source_location=source_location,
+                                  user_location=u_loc)
 
     return render_template('index.html', title=title, plot=plot)
 
@@ -67,7 +78,7 @@ def plot_map_practicle(polygon_location, practicle_location, weights, weights_s,
                        source_location=None, user_location=None):
     # 创建一个绘图对象和一个子图
     plt.clf()
-    fig, ax = plt.subplots(figsize=(10, 10))
+    fig, ax = plt.subplots(figsize=(13, 13))
     #     fig, ax = plt.subplots(figsize=(10, 5))
 
 #     绘制每一个多边形
@@ -91,12 +102,13 @@ def plot_map_practicle(polygon_location, practicle_location, weights, weights_s,
     max_weight = np.max(weights)
     # 创建一个颜色映射
     norm = mcolors.Normalize(vmin=min_weight, vmax=max_weight)
-    cmap = plt.cm.RdYlGn  # 使用RdYlGn颜色映射，权重越小越绿，权重越大越红
+    cmap = plt.cm.Greens   # 使用RdYlGn颜色映射，权重越小越绿，权重越大越红
     scalar_map = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     #     colors = plt.cm.RdYlGn(weights)  # 使用RdYlGn颜色映射，权重越大颜色越红，权重越小颜色越绿
     colors = scalar_map.to_rgba(weights)
     p_location = np.array(practicle_location)
-    ax.scatter(p_location[:, 0], p_location[:, 1], c=colors, s=5, zorder=10)  # 设置点的大小为50
+    ax.scatter(p_location[:, 0], p_location[:, 1], c=colors, s=3, zorder=13, edgecolors='black',
+               linewidths=0.5)  # 设置点的大小为50
 
     #     plot source
     min_weight = np.min(weights_s)
@@ -109,7 +121,8 @@ def plot_map_practicle(polygon_location, practicle_location, weights, weights_s,
     colors = scalar_map.to_rgba(weights_s)
     s_location = np.array(source_location)
     # print(s_location.shape)
-    ax.scatter(s_location[:, 0], s_location[:, 1], c=colors, zorder=12, s=50)
+    ax.scatter(s_location[:, 0], s_location[:, 1], c=colors, zorder=12, s=50, edgecolors='black',
+               linewidths=1)
 
     # plot user location
     ax.plot(user_location[0], user_location[1], c="red", markersize=15, zorder=100, marker='*')
@@ -204,15 +217,18 @@ source_info_match = re.findall(r"'(\d+)': SOURCE_INFO\(source_identifier='(\d+)'
 if source_info_match:
     source_info_dict = {}
     for identifier, _, x, y, z in source_info_match:
-        source_name.append(identifier)
+        source_name.append(int(identifier))
         source_location.append([float(x), float(y), float(z)])
 
 ########################################################################################################################
-def save_data(data1, data2, data3):
-    global pos_data, w_data, is_message
-    pos_data = data1
-    w_data = data2
-    is_message = data3
+def save_data(pos_data_n, w_data_n, user_loc_n, uuid_values, rssi_values, is_saved):
+    global pos_data, w_data, u_loc, b_name, b_strength, is_message
+    pos_data = pos_data_n
+    w_data = w_data_n
+    u_loc = user_loc_n
+    b_name = uuid_values
+    b_strength = rssi_values
+    is_message = is_saved
 
 def connect_mqtt():
     global pos_data, w_data
@@ -239,7 +255,30 @@ def connect_mqtt():
 
         # 提取w字段的数据并转换为numpy.array
         w_data_n = np.array(data['w'].replace('[', '').replace(']', '').split(', '), dtype=float)
-        save_data(pos_data_n, w_data_n, True)
+
+        # 提取userLoc的数据
+        user_loc_message = data["userLoc"]
+        user_loc_n = np.array([user_loc_message["lng"], user_loc_message["lat"]])
+
+        # 提取蓝牙的数据
+        ble_data = data["ble"]
+
+        # 初始化两个空的np.array
+        rssi_values = np.array([])
+        uuid_values = np.array([])
+
+        # 遍历每行数据，提取"rssi"值和"uuid"值
+        for item in ble_data:
+            rssi = item["rssi"]
+            uuid = item["uuid"]
+
+            # 将提取的值追加到对应的np.array中
+            rssi_values = np.append(rssi_values, float(rssi))
+            uuid_values = np.append(uuid_values, int(uuid))
+
+        # 保存数据
+        save_data(pos_data_n, w_data_n, user_loc_n, uuid_values, rssi_values, True)
+
 
 
     #         res = json.loads(zlib.decompress(msg.payload))
