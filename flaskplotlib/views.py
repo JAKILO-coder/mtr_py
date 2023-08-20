@@ -1,7 +1,10 @@
 import io
 import paho.mqtt.client as mqtt
 import time
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
 from flask import (
@@ -10,7 +13,7 @@ from flask import (
     abort,
     current_app,
     make_response
-    )
+)
 import numpy as np
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -23,6 +26,8 @@ import datetime
 import json
 import time
 import zlib
+from datetime import datetime
+
 
 from paho.mqtt import client as mqtt_client
 import threading
@@ -40,6 +45,17 @@ w_data = [0]
 u_loc = [0]
 b_name = [0]
 b_strength = [0]
+time_stamp = 0
+user_speed = 0
+
+
+def timestamp_to_string(timestamp):
+    # 将时间戳转换成 datetime 对象
+    dt_object = datetime.fromtimestamp(timestamp)
+
+    # 格式化输出字符串
+    formatted_string = dt_object.strftime("%Y-%m-%d %H:%M:%S")
+    return formatted_string
 
 
 @client.route('/')
@@ -49,7 +65,7 @@ def home():
         p_location = np.array([[114.19890707301564, 22.32988199829699], [114.19890707301564, 22.32988199829699],
                                [114.19890707301564, 22.32988199829699], [114.19890707301564, 22.32988199829699],
                                [114.19890707301564, 22.32988199829699]])
-        p_location += np.random.random((5, 2))*0.0001
+        p_location += np.random.random((5, 2)) * 0.0001
         weights = np.random.random(5)
         weights_s = np.random.random(len(source_location))
         user_loc = np.array([114.19900707301564, 22.32988199829699])
@@ -74,7 +90,12 @@ def home():
                                   weights_s=b_strength_sort, is_save=None, source_location=source_location,
                                   user_location=u_loc)
 
-    return render_template('index.html', title=title, plot=plot)
+    if is_message:
+        return render_template('index.html', title=title, plot=plot, speed=user_speed,
+                               this_time=timestamp_to_string(time_stamp))
+    else:
+        return render_template('index.html', title=title, plot=plot, speed=user_speed,
+                               this_time=timestamp_to_string(1629467646))
 
 #####################################################################################################################
 def plot_map_practicle(polygon_location, practicle_location, weights, weights_s, is_save,
@@ -83,7 +104,7 @@ def plot_map_practicle(polygon_location, practicle_location, weights, weights_s,
     fig, ax = plt.subplots(figsize=(13, 13))
     #     fig, ax = plt.subplots(figsize=(10, 5))
 
-#     绘制每一个多边形
+    #     绘制每一个多边形
     for polygon in polygon_location:
         polygon = np.array(polygon)
         x = polygon[:, 0]
@@ -104,7 +125,7 @@ def plot_map_practicle(polygon_location, practicle_location, weights, weights_s,
     max_weight = np.max(weights)
     # 创建一个颜色映射
     norm = mcolors.Normalize(vmin=min_weight, vmax=max_weight)
-    cmap = plt.cm.Greens   # 使用RdYlGn颜色映射，权重越小越绿，权重越大越红
+    cmap = plt.cm.Greens  # 使用RdYlGn颜色映射，权重越小越绿，权重越大越红
     scalar_map = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     #     colors = plt.cm.RdYlGn(weights)  # 使用RdYlGn颜色映射，权重越大颜色越红，权重越小颜色越绿
     colors = scalar_map.to_rgba(weights)
@@ -145,7 +166,7 @@ def plot_map_practicle(polygon_location, practicle_location, weights, weights_s,
     ax.set_ylim(polygon_np[:, :, 1].min() - 0.00005, polygon_np[:, :, 1].max() + 0.00005)  # 设置 y 坐标范围
     ax.tick_params(axis='both', which='both', bottom=False, top=False, left=False, right=False)
 
-#     print(np.array(polygon_location)[0, 0, :])
+    #     print(np.array(polygon_location)[0, 0, :])
     # 显示绘图
     # plt.show()
 
@@ -171,14 +192,16 @@ def plot_map_practicle(polygon_location, practicle_location, weights, weights_s,
     plt.close()
 
     return svg_img
+
+
 ##################################################################################################################
 # get map
 import re
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1#
 # use the map geo location here
-# file_path = 'D:\\留学\\港科大\\research assistant job\\mtr_cms\\planb_python\\KAT-polygon_source-geojson-1692267656.txt'  # 替换成你的文件路径
-file_path = '/home/mtrec/Desktop/mtr-py/mtr_py/flaskplotlib/KAT-polygon_source-geojson-1692267656.txt'
+file_path = 'D:\\留学\\港科大\\research assistant job\\mtr_cms\\planb_python\\KAT-polygon_source-geojson-1692267656.txt'  # 替换成你的文件路径
+# file_path = '/home/mtrec/Desktop/mtr-py/mtr_py/flaskplotlib/KAT-polygon_source-geojson-1692267656.txt'
 
 with open(file_path, 'r') as file:
     data = file.read()
@@ -224,15 +247,19 @@ if source_info_match:
         source_name.append(int(identifier))
         source_location.append([float(x), float(y), float(z)])
 
+
 ########################################################################################################################
-def save_data(pos_data_n, w_data_n, user_loc_n, uuid_values, rssi_values, is_saved):
-    global pos_data, w_data, u_loc, b_name, b_strength, is_message
+def save_data(pos_data_n, w_data_n, user_loc_n, uuid_values, rssi_values, is_saved, user_speed_m, timestamp_m):
+    global pos_data, w_data, u_loc, b_name, b_strength, is_message, user_speed, time_stamp
     pos_data = pos_data_n
     w_data = w_data_n
     u_loc = user_loc_n
     b_name = uuid_values
     b_strength = rssi_values
     is_message = is_saved
+    user_speed = user_speed_m
+    time_stamp = timestamp_m
+
 
 def connect_mqtt():
     global pos_data, w_data
@@ -267,6 +294,10 @@ def connect_mqtt():
         # 提取蓝牙的数据
         ble_data = data["ble"]
 
+        # 获取速度和时间戳
+        user_speed_m = f'userSpeedDist:{data["userSpeedDist"]}; userSpeedCumtrapz:{data["userSpeedCumtrapz"]}; userSpeedPedometer:{data["userSpeedPedometer"]}'
+        time_stamp_m = data["uploadTs"]
+
         # 初始化两个空的np.array
         rssi_values = np.array([])
         uuid_values = np.array([])
@@ -280,10 +311,9 @@ def connect_mqtt():
             rssi_values = np.append(rssi_values, float(rssi))
             uuid_values = np.append(uuid_values, int(uuid))
 
+
         # 保存数据
-        save_data(pos_data_n, w_data_n, user_loc_n, uuid_values, rssi_values, True)
-
-
+        save_data(pos_data_n, w_data_n, user_loc_n, uuid_values, rssi_values, True, user_speed_m, time_stamp_m)
 
     #         res = json.loads(zlib.decompress(msg.payload))
     #         print(res)
