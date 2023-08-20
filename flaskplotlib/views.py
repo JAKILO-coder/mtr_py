@@ -54,7 +54,8 @@ def timestamp_to_string(timestamp):
     dt_object = datetime.fromtimestamp(timestamp)
 
     # 格式化输出字符串
-    formatted_string = dt_object.strftime("%Y-%m-%d %H:%M:%S")
+    # formatted_string = dt_object.strftime("%Y-%m-%d %H:%M:%S")
+    formatted_string = dt_object.strftime("%H:%M:%S")
     return formatted_string
 
 
