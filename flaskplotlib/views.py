@@ -61,11 +61,14 @@ def home():
         # sort source weight with name
         beacon_dict = {name: strength for name, strength in zip(b_name, b_strength)}
         b_strength_sort = []
-        for name in source_name:
-            if name in b_name:
-                b_strength_sort.append(beacon_dict[name])
-            else:
-                b_strength_sort.append(b_strength.min() - 1)
+        if len(b_strength) == 0:
+            b_strength_sort = np.zeros(len(source_name))
+        else:
+            for name in source_name:
+                if name in b_name:
+                    b_strength_sort.append(beacon_dict[name])
+                else:
+                    b_strength_sort.append(b_strength.min() - 1)
         b_strength_sort = np.array(b_strength_sort)
         plot = plot_map_practicle(polygon_location=polygon_location, practicle_location=pos_data, weights=w_data,
                                   weights_s=b_strength_sort, is_save=None, source_location=source_location,
@@ -77,7 +80,6 @@ def home():
 def plot_map_practicle(polygon_location, practicle_location, weights, weights_s, is_save,
                        source_location=None, user_location=None):
     # 创建一个绘图对象和一个子图
-    plt.clf()
     fig, ax = plt.subplots(figsize=(13, 13))
     #     fig, ax = plt.subplots(figsize=(10, 5))
 
@@ -165,6 +167,8 @@ def plot_map_practicle(polygon_location, practicle_location, weights, weights_s,
     fig.savefig(img, format='svg')
     # clip off the xml headers from the image
     svg_img = '<svg' + img.getvalue().split('<svg')[1]
+    plt.clf()
+    plt.close()
 
     return svg_img
 ##################################################################################################################
@@ -173,8 +177,8 @@ import re
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1#
 # use the map geo location here
-# file_path = 'D:\\留学\\港科大\\research assistant job\\mtr_cms\\planb_python\\KAT-polygon_source-geojson-1692267656.txt'  # 替换成你的文件路径
-file_path = '/home/mtrec/Desktop/mtr-py/mtr_py/flaskplotlib/KAT-polygon_source-geojson-1692267656.txt'
+file_path = 'D:\\留学\\港科大\\research assistant job\\mtr_cms\\planb_python\\KAT-polygon_source-geojson-1692267656.txt'  # 替换成你的文件路径
+# file_path = '/home/mtrec/Desktop/mtr-py/mtr_py/flaskplotlib/KAT-polygon_source-geojson-1692267656.txt'
 
 with open(file_path, 'r') as file:
     data = file.read()
