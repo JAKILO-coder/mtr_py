@@ -93,10 +93,10 @@ def home():
 
     if is_message:
         return render_template('index.html', title=title, plot=plot, speed=user_speed,
-                               this_time=timestamp_to_string(time_stamp))
+                               this_time=time_stamp)
     else:
         return render_template('index.html', title=title, plot=plot, speed=user_speed,
-                               this_time=timestamp_to_string(1629467646))
+                               this_time=1629467646)
 
 #####################################################################################################################
 def plot_map_practicle(polygon_location, practicle_location, weights, weights_s, is_save,
