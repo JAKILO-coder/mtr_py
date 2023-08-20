@@ -296,7 +296,7 @@ def connect_mqtt():
         ble_data = data["ble"]
 
         # 获取速度和时间戳
-        user_speed_m = f'userSpeedDist:{data["userSpeedDist"]}; userSpeedCumtrapz:{data["userSpeedCumtrapz"]}; userSpeedPedometer:{data["userSpeedPedometer"]}'
+        user_speed_m = f'Dist:{data["userSpeedDist"]}; Cumtrapz:{data["userSpeedCumtrapz"]}; Ped:{data["userSpeedPedometer"]}'
         time_stamp_m = data["uploadTs"]
 
         # 初始化两个空的np.array
