@@ -46,7 +46,10 @@ u_loc = [0]
 b_name = [0]
 b_strength = [0]
 time_stamp = 0
-user_speed = 0
+user_speed1 = 0
+user_speed2 = 0
+user_speed3 = 0
+loc_std = 5
 
 
 def timestamp_to_string(timestamp):
@@ -54,8 +57,8 @@ def timestamp_to_string(timestamp):
     dt_object = datetime.fromtimestamp(timestamp)
 
     # 格式化输出字符串
-    # formatted_string = dt_object.strftime("%Y-%m-%d %H:%M:%S")
-    formatted_string = dt_object.strftime("%H:%M:%S")
+    formatted_string = dt_object.strftime("%Y-%m-%d %H:%M:%S")
+    # formatted_string = dt_object.strftime("%H:%M:%S")
     return formatted_string
 
 
@@ -72,7 +75,7 @@ def home():
         user_loc = np.array([114.19900707301564, 22.32988199829699])
         plot = plot_map_practicle(polygon_location=polygon_location, practicle_location=p_location, weights=weights,
                                   weights_s=weights_s, is_save=None, source_location=source_location,
-                                  user_location=user_loc)
+                                  user_location=user_loc, std=loc_std)
     else:
         # match beacon's name and source name
         # sort source weight with name
@@ -89,18 +92,18 @@ def home():
         b_strength_sort = np.array(b_strength_sort)
         plot = plot_map_practicle(polygon_location=polygon_location, practicle_location=pos_data, weights=w_data,
                                   weights_s=b_strength_sort, is_save=None, source_location=source_location,
-                                  user_location=u_loc)
+                                  user_location=u_loc, std=loc_std)
 
     if is_message:
-        return render_template('index.html', title=title, plot=plot, speed=user_speed,
-                               this_time=time_stamp)
+        return render_template('index.html', title=title, plot=plot, speed1=user_speed1, speed2=user_speed2,
+                               speed3=user_speed3, this_time=timestamp_to_string(time_stamp/1000))
     else:
-        return render_template('index.html', title=title, plot=plot, speed=user_speed,
-                               this_time=1629467646)
+        return render_template('index.html', title=title, plot=plot, speed1=user_speed1, speed2=user_speed2,
+                               speed3=user_speed3, this_time=timestamp_to_string(1692437656200/1000))
 
 #####################################################################################################################
 def plot_map_practicle(polygon_location, practicle_location, weights, weights_s, is_save,
-                       source_location=None, user_location=None):
+                       source_location=None, user_location=None, std=None):
     # 创建一个绘图对象和一个子图
     fig, ax = plt.subplots(figsize=(13, 13))
     #     fig, ax = plt.subplots(figsize=(10, 5))
@@ -151,6 +154,11 @@ def plot_map_practicle(polygon_location, practicle_location, weights, weights_s,
     # plot user location
     ax.plot(user_location[0], user_location[1], c="red", markersize=15, zorder=100, marker='*')
 
+    # plot std circle
+    if std:
+        circle = plt.Circle((user_location[0], user_location[1]), std/111000, color='yellow', fill=False, zorder=101)
+        ax.add_patch(circle)
+
     # 设置绘图范围和标签
     ax.set_aspect('equal', adjustable='datalim')  # 保持纵横比相等
     # ax.set_xlabel('X')
@@ -170,6 +178,7 @@ def plot_map_practicle(polygon_location, practicle_location, weights, weights_s,
     #     print(np.array(polygon_location)[0, 0, :])
     # 显示绘图
     # plt.show()
+
 
     if is_save:
         # 获取当前时间
@@ -250,16 +259,21 @@ if source_info_match:
 
 
 ########################################################################################################################
-def save_data(pos_data_n, w_data_n, user_loc_n, uuid_values, rssi_values, is_saved, user_speed_m, timestamp_m):
-    global pos_data, w_data, u_loc, b_name, b_strength, is_message, user_speed, time_stamp
+def save_data(pos_data_n, w_data_n, user_loc_n, uuid_values, rssi_values, is_saved, speed1, speed2, speed3,
+              timestamp_m, std_value):
+    global pos_data, w_data, u_loc, b_name, b_strength, is_message, user_speed1, user_speed2, user_speed3, \
+        time_stamp, loc_std
     pos_data = pos_data_n
     w_data = w_data_n
     u_loc = user_loc_n
     b_name = uuid_values
     b_strength = rssi_values
     is_message = is_saved
-    user_speed = user_speed_m
+    user_speed1 = speed1
+    user_speed2 = speed2
+    user_speed3 = speed3
     time_stamp = timestamp_m
+    loc_std = std_value
 
 
 def connect_mqtt():
@@ -296,7 +310,9 @@ def connect_mqtt():
         ble_data = data["ble"]
 
         # 获取速度和时间戳
-        user_speed_m = f'Dist:{data["userSpeedDist"]}; Cumtrapz:{data["userSpeedCumtrapz"]}; Ped:{data["userSpeedPedometer"]}'
+        user_speed_m1 = f'{data["userSpeedDist"]};'
+        user_speed_m2 = f'{data["userSpeedCumtrapz"]};'
+        user_speed_m3 = f'{data["userSpeedPedometer"]};'
         time_stamp_m = data["uploadTs"]
 
         # 初始化两个空的np.array
@@ -313,8 +329,12 @@ def connect_mqtt():
             uuid_values = np.append(uuid_values, int(uuid))
 
 
+        # get std data
+        std_value = data["posStd"]
+
         # 保存数据
-        save_data(pos_data_n, w_data_n, user_loc_n, uuid_values, rssi_values, True, user_speed_m, time_stamp_m)
+        save_data(pos_data_n, w_data_n, user_loc_n, uuid_values, rssi_values, True, user_speed_m1, user_speed_m2,
+                  user_speed_m3, time_stamp_m, std_value)
 
     #         res = json.loads(zlib.decompress(msg.payload))
     #         print(res)

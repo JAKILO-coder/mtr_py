@@ -5,13 +5,36 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta http-equiv="refresh" content="1">
-        <style> .trans{transform: rotate(60deg);} </style>
+        <style>
+            .trans{transform: rotate(60deg);}
+            .container {
+                width: 1200px; /* 裁剪后的长方形宽度 */
+                height: 300px; /* 裁剪后的长方形高度 */
+                overflow: hidden;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .rotated-image {
+                width: 100%;
+                height: 100%;
+                transform: rotate(60deg); /* 顺时针旋转60度 */
+                object-fit: cover;
+            }
+        </style>
         <title>{{ title }}</title>
 
     </head>
     <body>
-        <p>time: {{ this_time }}</p>
-        <p>speed: {{ speed }}</p>
-        <div class="trans">{{ plot|safe }}</div>
+        time: {{ this_time }}
+        Dist: {{ speed1 }}
+        Cumtrapz: {{ speed2 }}
+        Ped: {{ speed3 }}
+<!--        <div class="trans">{{ plot|safe }}</div>-->
+        <div class="container">
+            <div class="trans">{{ plot|safe }}</div>
+<!--            <img class="rotated-image" src={{ plot }} alt="Rotated and Clipped Image">-->
+        </div>
     </body>
 </html>
