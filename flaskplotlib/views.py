@@ -71,7 +71,7 @@ def home():
                                [114.19890707301564, 22.32988199829699]])
         p_location += np.random.random((5, 2)) * 0.0001
         weights = np.random.random(5)
-        weights_s = np.random.random(len(source_location))
+        weights_s = np.random.random(len(source_location)) * 100
         user_loc = np.array([114.19900707301564, 22.32988199829699])
         plot = plot_map_practicle(polygon_location=polygon_location, practicle_location=p_location, weights=weights,
                                   weights_s=weights_s, is_save=None, source_location=source_location,
@@ -150,6 +150,10 @@ def plot_map_practicle(polygon_location, practicle_location, weights, weights_s,
     # print(s_location.shape)
     ax.scatter(s_location[:, 0], s_location[:, 1], c=colors, zorder=12, s=50, edgecolors='black',
                linewidths=1)
+    # plot source value
+    for i in range(0, len(weights_s)):
+        ax.text(s_location[i, 0], s_location[i, 1], "%d" % (weights_s[i]),
+                 fontsize=10, ha='center', va='bottom', zorder=13, rotation=0)  # 在点旁边显示值
 
     # plot user location
     ax.plot(user_location[0], user_location[1], c="red", markersize=15, zorder=100, marker='*')
@@ -195,9 +199,11 @@ def plot_map_practicle(polygon_location, practicle_location, weights, weights_s,
 
     # plt.show()
     img = io.StringIO()
+    # img = io.BytesIO()
     fig.savefig(img, format='svg')
     # clip off the xml headers from the image
     svg_img = '<svg' + img.getvalue().split('<svg')[1]
+    # svg_img = '<svg' + img.getvalue().decode().split('<svg')[1]
     plt.clf()
     plt.close()
 
@@ -310,9 +316,9 @@ def connect_mqtt():
         ble_data = data["ble"]
 
         # 获取速度和时间戳
-        user_speed_m1 = f'{data["userSpeedDist"]};'
-        user_speed_m2 = f'{data["userSpeedCumtrapz"]};'
-        user_speed_m3 = f'{data["userSpeedPedometer"]};'
+        user_speed_m1 = f'{data["userSpeedDist"]}'
+        user_speed_m2 = f'{data["userSpeedCumtrapz"]}'
+        user_speed_m3 = f'{data["userSpeedPedometer"]}'
         time_stamp_m = data["uploadTs"]
 
         # 初始化两个空的np.array

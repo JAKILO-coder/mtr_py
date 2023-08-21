@@ -15,26 +15,17 @@
                 justify-content: center;
                 align-items: center;
             }
-
-            .rotated-image {
-                width: 100%;
-                height: 100%;
-                transform: rotate(60deg); /* 顺时针旋转60度 */
-                object-fit: cover;
-            }
         </style>
         <title>{{ title }}</title>
 
     </head>
     <body>
-        time: {{ this_time }}
-        Dist: {{ speed1 }}
-        Cumtrapz: {{ speed2 }}
+        time: {{ this_time }}<br />
+        Dist: {{ speed1 }}<br />
+        Cumtrapz: {{ speed2 }}<br />
         Ped: {{ speed3 }}
-<!--        <div class="trans">{{ plot|safe }}</div>-->
         <div class="container">
             <div class="trans">{{ plot|safe }}</div>
-<!--            <img class="rotated-image" src={{ plot }} alt="Rotated and Clipped Image">-->
         </div>
     </body>
 </html>
